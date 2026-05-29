@@ -1,0 +1,40 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Resident {
+  id            Int             @id @default(autoincrement())
+  jenisData     String          // "Perorangan" atau "Keluarga"
+  nik           String          @unique // Berisi NIK Warga (Perorangan) atau No. KK (Keluarga)
+  nama          String          // Nama Warga atau Nama Kepala Keluarga
+  dusun         String
+  statusEkonomi String
+  createdAt     DateTime        @default(now())
+  anggota       FamilyMember[]
+}
+
+// Model Diperbarui sesuai image_013b51.png dengan field tambahan
+model FamilyMember {
+  id          Int      @id @default(autoincrement())
+  nik         String   // NIK masing-masing anggota keluarga
+  nama        String
+  hubungan    String   // "Kepala Keluarga", "Istri", "Anak", dll
+  pekerjaan   String   // Pekerjaan anggota
+  status      String   // Status perkawinan/keterangan lain
+  residentId  Int
+  resident    Resident @relation(fields: [residentId], references: [id], onDelete: Cascade)
+}
+
+model Article {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  imageUrl  String
+  date      String
+  createdAt DateTime @default(now())
+}

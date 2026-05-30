@@ -6,16 +6,14 @@ import {
   MapPin,
   Users,
   Award,
-  Milestone,
-  CheckCircle2,
-  ChevronRight,
-  ChevronLeft,
-  Building2,
   Trees,
   Menu,
   X,
   Calendar,
   Home,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
 } from "lucide-react";
 
 interface FamilyMember {
@@ -32,8 +30,8 @@ interface Resident {
   nama: string;
   dusun: string;
   statusEkonomi: string;
-  jenisData: string; // "Perorangan" atau "Keluarga"
-  anggota?: FamilyMember[]; // Tambahkan array anggota di interface agar tidak error saat reduce
+  jenisData: string; 
+  anggota?: FamilyMember[]; 
 }
 
 interface Article {
@@ -49,7 +47,6 @@ export default function DesaSegunungProfile() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  // State Manajemen Data Dinamis
   const [articles, setArticles] = useState<Article[]>([]);
   const [totalJiwa, setTotalJiwa] = useState(0);
   const [totalKeluarga, setTotalKeluarga] = useState(0);
@@ -75,25 +72,20 @@ export default function DesaSegunungProfile() {
     },
   ];
 
-  // Fetch semua data saat halaman pertama kali dimuat
   useEffect(() => {
     const loadDynamicData = async () => {
       try {
-        // 1. Fetch Berita Desa
         const resArticles = await fetch("/api/articles");
         if (resArticles.ok) setArticles(await resArticles.json());
 
-        // 2. Fetch Data Penduduk & Hitung Jumlah Jiwa Riil Akumulatif
         const resResidents = await fetch("/api/residents");
         if (resResidents.ok) {
           const residentsData: Resident[] = await resResidents.json();
 
-          // Hitung total KK dari baris berlabel "Keluarga"
           const keluargaCount = residentsData.filter(
             (r) => r.jenisData === "Keluarga",
           ).length;
 
-          // REVISI KALKULASI: Menghitung total perorangan + isi seluruh anggota di dalam KK
           const jiwaCount = residentsData.reduce((total, r) => {
             if (r.jenisData === "Perorangan" || !r.jenisData) {
               return total + 1;
@@ -115,17 +107,8 @@ export default function DesaSegunungProfile() {
 
   useEffect(() => {
     const checkScroll = () => {
-      const scrollPosition =
-        window.pageYOffset ||
-        document.documentElement.scrollTop ||
-        document.body.scrollTop ||
-        0;
-
-      if (scrollPosition > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
+      setIsScrolled(scrollPosition > 50);
     };
 
     window.addEventListener("scroll", checkScroll);
@@ -157,64 +140,48 @@ export default function DesaSegunungProfile() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#FAFAFA] text-slate-800 font-sans antialiased">
+    <div className="relative min-h-screen bg-[#FAFAFA] text-slate-800 font-sans antialiased overflow-x-hidden">
+      
       {/* NAVBAR */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 w-full ${
+          isScrolled || isMobileMenuOpen
             ? "bg-white shadow-lg border-b border-slate-100"
             : "bg-transparent"
         }`}
-        style={{ backgroundColor: isScrolled ? "#ffffff" : "transparent" }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-[92%] max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 md:w-14 md:h-14 overflow-hidden rounded-xl shadow-md bg-white flex items-center justify-center">
+            
+            {/* Logo Group */}
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-xl shadow-sm bg-white flex items-center justify-center flex-shrink-0">
                 <img
                   src="/logoDesa.png"
                   alt="Logo Desa"
                   className="w-full h-full object-cover"
-                  style={{ mixBlendMode: "multiply" }}
                 />
               </div>
               <div>
-                <span
-                  className={`font-bold text-base md:text-lg tracking-tight block transition-colors ${isScrolled ? "text-slate-900" : "text-white"}`}
-                >
+                <span className={`font-black text-sm md:text-base tracking-tight block transition-colors ${isScrolled || isMobileMenuOpen ? "text-slate-900" : "text-white"}`}>
                   Desa Segunung
                 </span>
-                <span
-                  className={`text-[10px] md:text-xs font-bold tracking-wider uppercase block transition-colors ${isScrolled ? "text-emerald-600" : "text-emerald-300"}`}
-                >
+                <span className={`text-[9px] md:text-[11px] font-bold tracking-wider uppercase block transition-colors ${isScrolled || isMobileMenuOpen ? "text-emerald-600" : "text-emerald-300"}`}>
                   Smart & Eco Tani Village
                 </span>
               </div>
             </div>
 
-            <div className="hidden md:flex items-center gap-8">
-              {[
-                "Beranda",
-                "Potensi Tani",
-                "Statistik",
-                "Keunggulan",
-                "Berita",
-                "Lokasi",
-              ].map((item, idx) => {
-                const href = [
-                  "#hero",
-                  "#potensi",
-                  "#statistik",
-                  "#keunggulan",
-                  "#berita",
-                  "#lokasi",
-                ][idx];
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
+              {["Beranda", "Potensi Tani", "Statistik", "Keunggulan", "Berita", "Lokasi"].map((item, idx) => {
+                const href = ["#hero", "#potensi", "#statistik", "#keunggulan", "#berita", "#lokasi"][idx];
                 return (
                   <a
                     key={item}
                     href={href}
                     onClick={(e) => handleAnchorClick(e, href)}
-                    className={`font-semibold text-sm transition-all relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-500 after:transition-all hover:after:w-full ${isScrolled ? "text-slate-700 hover:text-emerald-600" : "text-white/90 hover:text-white"}`}
+                    className={`font-semibold text-xs lg:text-sm transition-all relative py-1 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-emerald-500 after:transition-all hover:after:w-full ${isScrolled ? "text-slate-700 hover:text-emerald-600" : "text-white/90 hover:text-white"}`}
                   >
                     {item}
                   </a>
@@ -222,16 +189,37 @@ export default function DesaSegunungProfile() {
               })}
             </div>
 
+            {/* Mobile Toggle Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 rounded-lg transition-colors md:hidden ${isScrolled ? "text-slate-900" : "text-white"}`}
+              className={`p-2 rounded-xl transition-colors md:hidden focus:outline-none ${isScrolled || isMobileMenuOpen ? "text-slate-900 bg-slate-50" : "text-white bg-white/10 backdrop-blur-sm"}`}
             >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
+          </div>
+        </div>
+
+        {/* MOBILE DRAWER MENU */}
+        <div
+          className={`absolute top-16 left-0 right-0 bg-white border-b border-slate-100 shadow-xl transition-all duration-300 md:hidden overflow-hidden ${
+            isMobileMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="w-[90%] mx-auto py-4 flex flex-col gap-1">
+            {["Beranda", "Potensi Tani", "Statistik", "Keunggulan", "Berita", "Lokasi"].map((item, idx) => {
+              const href = ["#hero", "#potensi", "#statistik", "#keunggulan", "#berita", "#lokasi"][idx];
+              return (
+                <a
+                  key={item}
+                  href={href}
+                  onClick={(e) => handleAnchorClick(e, href)}
+                  className="w-full text-left font-bold text-sm text-slate-700 hover:text-emerald-600 hover:bg-emerald-50/50 px-4 py-3 rounded-xl transition-all flex items-center justify-between group"
+                >
+                  <span>{item}</span>
+                  <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+              );
+            })}
           </div>
         </div>
       </nav>
@@ -249,43 +237,57 @@ export default function DesaSegunungProfile() {
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover opacity-50"
+              className="w-full h-full object-cover opacity-45 scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/20 to-[#FAFAFA]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/30 to-[#FAFAFA]" />
           </div>
         ))}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full text-center text-white py-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-xs font-bold tracking-wide uppercase mb-6 border border-white/20">
+        
+        {/* Content Box (Responsif Persentase) */}
+        <div className="relative z-10 w-[90%] max-w-4xl mx-auto text-center text-white pt-24 pb-12 flex flex-col items-center">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-[10px] md:text-xs font-bold tracking-wide uppercase mb-6 border border-white/20 shadow-inner">
             <Trees className="w-3.5 h-3.5" /> Desa Agraris Segunung
           </div>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6">
-            <span className="text-base md:text-lg text-emerald-300 block mb-2">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 sm:mb-6 leading-tight">
+            <span className="text-xs sm:text-sm md:text-base text-emerald-300 font-bold tracking-widest block mb-2 uppercase">
               Selamat Datang di
             </span>
-            <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent block">
               {slides[activeSlide].title}
             </span>
-            <span className="block mt-2">{slides[activeSlide].subtitle}</span>
+            <span className="block mt-1 text-xl sm:text-3xl md:text-4xl font-extrabold text-white/95">{slides[activeSlide].subtitle}</span>
           </h1>
-          <p className="text-base md:text-lg text-slate-200 max-w-3xl mx-auto mb-10 leading-relaxed min-h-[3rem]">
+          <p className="text-xs sm:text-sm md:text-base text-slate-200 w-[95%] sm:w-[85%] mx-auto mb-8 sm:mb-10 leading-relaxed min-h-[4.5rem] font-medium">
             {slides[activeSlide].desc}
           </p>
+          
+          {/* Indicators Bar */}
+          <div className="flex gap-2 mt-4">
+            {slides.map((_, idx) => (
+              <button 
+                key={idx} 
+                onClick={() => setActiveSlide(idx)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${activeSlide === idx ? "w-6 bg-emerald-500" : "w-2 bg-white/30"}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
       {/* POTENSI PERTANIAN */}
-      <section id="potensi" className="py-24 bg-white relative z-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-bold tracking-widest text-emerald-600 uppercase mb-3">
+      <section id="potensi" className="py-16 md:py-24 bg-white relative z-20">
+        <div className="w-[90%] max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-widest text-emerald-600 uppercase mb-2">
               Sektor Utama
             </h2>
-            <p className="text-2xl md:text-4xl font-black text-slate-900">
+            <p className="text-2xl md:text-4xl font-black text-slate-900 leading-tight">
               Pilar Utama Agrikultur Desa Segunung
             </p>
-            <div className="w-12 h-1 bg-emerald-500 mx-auto mt-4 rounded-full" />
+            <div className="w-10 h-1 bg-emerald-500 mx-auto mt-3 rounded-full" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {[
               {
                 icon: Trees,
@@ -305,15 +307,15 @@ export default function DesaSegunungProfile() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="group bg-[#FAFAFA] p-8 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-300"
+                className="group bg-[#FAFAFA] p-6 sm:p-8 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-300 w-full"
               >
-                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white transition-all">
-                  <item.icon className="w-7 h-7" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-teal-600 group-hover:text-white transition-all">
+                  <item.icon className="w-6 h-6 sm:w-7 sm:h-7" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mt-6 mb-3">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-5 mb-2.5">
                   {item.title}
                 </h3>
-                <p className="text-slate-500 text-sm leading-relaxed">
+                <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-medium">
                   {item.desc}
                 </p>
               </div>
@@ -322,13 +324,14 @@ export default function DesaSegunungProfile() {
         </div>
       </section>
 
-      {/* STATISTIK PERTANIAN (SUDAH FIX DINAMIS AKUMULATIF) */}
+      {/* STATISTIK PERTANIAN */}
       <section
         id="statistik"
-        className="py-16 bg-gradient-to-br from-slate-100 to-slate-50 relative z-20 border-y border-slate-200/50"
+        className="py-12 md:py-16 bg-gradient-to-br from-slate-100 to-slate-50 relative z-20 border-y border-slate-200/50 w-full"
       >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="w-[90%] max-w-7xl mx-auto">
+          {/* Grid responsif: 2 kolom di mobile, 4 kolom di tablet/PC */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {[
               {
                 icon: Users,
@@ -345,15 +348,15 @@ export default function DesaSegunungProfile() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="text-center md:text-left transition-all duration-300 hover:scale-105"
+                className="text-center md:text-left transition-all duration-300 bg-white/40 md:bg-transparent p-4 md:p-0 rounded-2xl border border-slate-200/40 md:border-0"
               >
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-emerald-600 shadow-sm mb-4 mx-auto md:mx-0 border border-slate-200/60">
-                  <item.icon className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-emerald-600 shadow-sm mb-3 mx-auto md:mx-0 border border-slate-200/60">
+                  <item.icon className="w-4 h-4" />
                 </div>
-                <span className="block text-2xl md:text-4xl font-black text-slate-950 tracking-tight">
+                <span className="block text-xl sm:text-2xl md:text-4xl font-black text-slate-950 tracking-tight">
                   {item.value}
                 </span>
-                <span className="text-[10px] md:text-xs font-bold text-slate-400 tracking-wider uppercase mt-1 block">
+                <span className="text-[9px] md:text-xs font-bold text-slate-400 tracking-wider uppercase mt-1 block">
                   {item.label}
                 </span>
               </div>
@@ -363,18 +366,19 @@ export default function DesaSegunungProfile() {
       </section>
 
       {/* KEUNGGULAN DESA */}
-      <section id="keunggulan" className="py-24 bg-white relative z-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-bold tracking-widest text-emerald-600 uppercase mb-3">
+      <section id="keunggulan" className="py-16 md:py-24 bg-white relative z-20">
+        <div className="w-[90%] max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-widest text-emerald-600 uppercase mb-2">
               Kelebihan
             </h2>
-            <p className="text-2xl md:text-4xl font-black text-slate-900">
+            <p className="text-2xl md:text-4xl font-black text-slate-900 leading-tight">
               Mengapa Sektor Pertanian Segunung Unggul?
             </p>
-            <div className="w-12 h-1 bg-emerald-500 mx-auto mt-4 rounded-full" />
+            <div className="w-10 h-1 bg-emerald-500 mx-auto mt-3 rounded-full" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto w-full">
             {[
               "Tanah Vulkanis yang Sangat Subur",
               "Sistem Pengairan Sawah Terjaga Sepanjang Tahun",
@@ -385,10 +389,10 @@ export default function DesaSegunungProfile() {
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 hover:bg-emerald-50 transition-all duration-300 hover:scale-[1.02]"
+                className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-emerald-50/70 transition-all duration-300 hover:scale-[1.01]"
               >
-                <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                <span className="text-slate-700 font-medium">{item}</span>
+                <CheckCircle2 className="w-4 h-4 sm:w-5 h-5 text-emerald-500 flex-shrink-0" />
+                <span className="text-slate-700 font-bold text-xs sm:text-sm">{item}</span>
               </div>
             ))}
           </div>
@@ -399,46 +403,46 @@ export default function DesaSegunungProfile() {
       {articles.length > 0 && (
         <section
           id="berita"
-          className="py-24 bg-slate-50 relative z-20 border-t border-slate-200/60"
+          className="py-16 md:py-24 bg-slate-50 relative z-20 border-t border-slate-200/60"
         >
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-xs font-bold tracking-widest text-emerald-600 uppercase mb-3">
+          <div className="w-[90%] max-w-7xl mx-auto">
+            <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+              <h2 className="text-[10px] md:text-xs font-bold tracking-widest text-emerald-600 uppercase mb-2">
                 Kabar Desa
               </h2>
-              <p className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight">
+              <p className="text-2xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
                 Berita & Kegiatan Kebonalas Segunung
               </p>
-              <div className="w-12 h-1 bg-emerald-500 mx-auto mt-4 rounded-full" />
+              <div className="w-10 h-1 bg-emerald-500 mx-auto mt-3 rounded-full" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto w-full">
               {articles.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-200 flex flex-col justify-between group hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  className="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-200 flex flex-col justify-between group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full"
                 >
                   <div>
-                    <div className="h-52 w-full bg-slate-100 overflow-hidden relative">
+                    <div className="h-48 sm:h-52 w-full bg-slate-100 overflow-hidden relative">
                       <img
                         src={item.imageUrl}
                         alt={item.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
-                    <div className="p-6">
-                      <h3 className="font-black text-xl text-slate-900 leading-tight mb-3 capitalize group-hover:text-emerald-600 transition-colors">
+                    <div className="p-5 sm:p-6">
+                      <h3 className="font-black text-lg sm:text-xl text-slate-900 leading-tight mb-2.5 capitalize group-hover:text-emerald-600 transition-colors line-clamp-2">
                         {item.title}
                       </h3>
-                      <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 mb-4">
+                      <p className="text-slate-500 text-xs sm:text-sm leading-relaxed line-clamp-3 mb-4 font-medium">
                         {item.content}
                       </p>
-                      <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-sm hover:gap-2 transition-all cursor-pointer">
+                      <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-xs sm:text-sm hover:gap-2 transition-all cursor-pointer">
                         Read More <ChevronRight className="w-4 h-4" />
                       </span>
                     </div>
                   </div>
-                  <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center gap-2 text-xs text-slate-400 font-semibold">
+                  <div className="px-5 sm:p-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center gap-2 text-[10px] sm:text-xs text-slate-400 font-bold">
                     <Calendar className="w-4 h-4 text-emerald-600" />
                     <span>{item.date}</span>
                   </div>
@@ -452,22 +456,24 @@ export default function DesaSegunungProfile() {
       {/* MAPS SECTION */}
       <section
         id="lokasi"
-        className="py-24 bg-gradient-to-b from-white to-slate-50 relative z-20 border-t border-slate-100"
+        className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50 relative z-20 border-t border-slate-100"
       >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-6">
-            <h2 className="text-xs font-bold tracking-widest text-emerald-600 uppercase mb-3">
+        <div className="w-[90%] max-w-7xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-8">
+            <h2 className="text-[10px] md:text-xs font-bold tracking-widest text-emerald-600 uppercase mb-2">
               Lokasi Geografis
             </h2>
             <p className="text-2xl md:text-4xl font-black text-slate-900">
               Peta Wilayah Desa Segunung
             </p>
-            <div className="w-12 h-1 bg-emerald-500 mx-auto mt-4 rounded-full" />
-            <p className="text-slate-500 text-sm mt-4">
+            <div className="w-10 h-1 bg-emerald-500 mx-auto mt-3 rounded-full" />
+            <p className="text-slate-500 text-xs sm:text-sm font-semibold mt-4 leading-relaxed">
               Kecamatan Dlanggu, Kabupaten Mojokerto, Jawa Timur, Indonesia
             </p>
           </div>
-          <div className="max-w-7xl mx-auto w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white relative">
+          
+          {/* Iframe Box Menggunakan Persentase Kontainer Penting */}
+          <div className="w-full h-[280px] sm:h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white relative">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15814.770281224673!2d112.4716766465495!3d-7.553956793655106!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e78e9fa07f3521d%3A0x6b4a3c1f016335ab!2sSegunung%2C%20Kec.%20Dlanggu%2C%20Kabupaten%20Mojokerto%2C%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1710000000000!5m2!1sid!2sid&maptype=hybrid"
               className="absolute inset-0 w-full h-full border-0"
@@ -481,25 +487,25 @@ export default function DesaSegunungProfile() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-emerald-700 text-white py-12 relative z-20">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 overflow-hidden rounded-xl bg-white flex items-center justify-center">
+      <footer className="bg-emerald-800 text-white py-10 sm:py-12 relative z-20 border-t border-emerald-900">
+        <div className="w-[90%] max-w-7xl mx-auto text-center flex flex-col items-center">
+          <div className="flex items-center gap-2.5 mb-5 text-left">
+            <div className="w-10 h-10 overflow-hidden rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-md">
               <img
                 src="/logoDesa.png"
                 alt="Logo"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="text-left">
-              <span className="font-bold text-lg block">Desa Segunung</span>
-              <span className="text-xs font-bold uppercase block text-emerald-200">
+            <div>
+              <span className="font-black text-base tracking-tight block">Desa Segunung</span>
+              <span className="text-[10px] font-bold uppercase block text-emerald-200 tracking-wider">
                 Smart & Eco Tani Village
               </span>
             </div>
           </div>
-          <p className="text-emerald-200 text-sm">
-            © 2026 Desa Segunung. All rights reserved.
+          <p className="text-emerald-200/70 text-[11px] sm:text-xs font-medium border-t border-emerald-700/60 pt-4 w-full max-w-md">
+            &copy; 2026 Desa Segunung. All rights reserved.
           </p>
         </div>
       </footer>

@@ -38,3 +38,12 @@ model Article {
   date      String
   createdAt DateTime @default(now())
 }
+
+// Tambahkan ini di bagian paling bawah schema.prisma kamu
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  nama      String
+  password  String
+  createdAt DateTime @default(now())
+}
